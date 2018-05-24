@@ -1,0 +1,12 @@
+S -> NP VP
+NP -> D N
+D -> the
+D -> a
+N -> dog
+N -> cat
+VP -> V NP
+V -> chases
+V -> hunts
+S -> S SS
+SS -> CONJ S
+CONJ -> anD
