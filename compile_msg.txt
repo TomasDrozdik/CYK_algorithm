@@ -1,0 +1,66 @@
+[2 of 2] Compiling Main             ( CYK.hs, interpreted )
+
+CYK.hs:11:13: error:
+    * Couldn't match type `Char' with `[Char]'
+      Expected type: Array (Int, Int) [[NT]]
+        Actual type: Array (Int, Int) [NT]
+    * In the expression:
+        array ((0, 0), (n, n))
+          $ [((x, x + i), generators (x, (x + i))) |
+               i <- [0 .. n], x <- [0 .. n - i]]
+              ++ [((x, y), []) | x <- [0 .. n], y <- [0 .. n], x > y]
+      In an equation for `m':
+          m = array ((0, 0), (n, n))
+                $ [((x, x + i), generators (x, (x + i))) |
+                     i <- [0 .. n], x <- [0 .. n - i]]
+                    ++ [((x, y), []) | x <- [0 .. n], y <- [0 .. n], x > y]
+            where
+                generators :: (Int, Int) -> [NT]
+                generators (x, y)
+                  = if x == y then
+                        termGens cfg [...]
+                    else
+                        nub $ concat $ [ntGens' a b | t <- ..., a <- m ! ..., b <- m ! ...]
+                  where
+                      ntGens' :: [NT] -> [NT] -> [NT]
+                      ntGens' xs ys = concat $ concat $ map (\ x -> ...) xs
+      In the expression:
+        let
+          n = - 1 + length s
+          m = array ((0, 0), (n, n))
+                $ [... | i <- ..., x <- ...] ++ [... | x <- ..., y <- ..., x > y]
+            where
+                generators :: (Int, Int) -> [NT]
+                ....
+        in m
+   |
+11 |         m = array ((0,0), (n, n)) $
+   |             ^^^^^^^^^^^^^^^^^^^^^^^...
+
+CYK.hs:32:8: error:
+    * Couldn't match type `[Char]' with `Char'
+      Expected type: Array (Int, Int) [NT]
+        Actual type: Array (Int, Int) [[NT]]
+    * In the expression: m
+      In the expression:
+        let
+          n = - 1 + length s
+          m = array ((0, 0), (n, n))
+                $ [... | i <- ..., x <- ...] ++ [... | x <- ..., y <- ..., x > y]
+            where
+                generators :: (Int, Int) -> [NT]
+                ....
+        in m
+      In an equation for cyk':
+          cyk' cfg s
+            = let
+                n = ... + length s
+                m = array ... $ ... ++ ...
+                  where
+                      ...
+              in m
+   |
+32 |     in m
+   |        ^
+Failed, one module loaded.
+

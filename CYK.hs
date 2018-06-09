@@ -16,16 +16,16 @@ cyk' cfg s =
                            x > y]                                       -- lower triangular
 
             where generators :: (Int, Int) -> [NT]
-                  -- ^ returns NTs which generate string indexed from x to y
+                  -- ^ returns NTs which generate string from index x to y
                   generators (x, y) =
                     if x == y then termGens cfg [s!!x]                  -- diagonal only direct rules
-                    else nub $ concat $ [ntGens' a b | t <- [0..y - 1],
-                                                       a <- m ! (x, x + t),
-                                                       b <- m ! (x + t + 1, y)]
+                    else nub $ concat $ [ntGens' a b | t <- [x..y - 1],
+                                                       a <- m ! (x, t),
+                                                       b <- m ! (t + 1, y)]
                         
                         where ntGens' :: [NT] -> [NT] -> [NT]
                               -- ^ takes two lists of NTs and returns list of NT generating 
-                              --   ordered combinations of original lists
+                              -- ordered combinations of original lists
                               ntGens' xs ys = concat $ concat $ map 
                                   (\x -> map (\y -> ntGens cfg (x, y)) ys) xs
 
@@ -33,7 +33,8 @@ cyk' cfg s =
 
 
 cyk :: CFG -> String -> Bool
--- ^ CYK algorithm for CFG grammar in CHNF parsing String s
+-- ^ CYK algorithm for CFG grammar in CHNF parsing String s 
+-- returns True if cfg =>* s
 cyk cfg s =
     "S" `elem` (cyk' cfg s) ! (0, (length s) - 1)
 
