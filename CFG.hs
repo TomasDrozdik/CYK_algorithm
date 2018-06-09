@@ -1,46 +1,39 @@
-module Grammar where
+module CFG where
 
-    type NT = String
-    type T  = String
-    
-    data RightSide = Branch (NT, NT) | Chain T deriving (Show, Eq, Ord)
-    -- | A Rule in Chomsky-Normal-Form is either branching (NT -> NTNT), or chaining multiple T (NT -> T^n)
-    
-    type Rule = (NT, RightSide)
-    type Grammar = [Rule]
+type NT = String
+type T  = String
 
-    leftSide :: Rule -> NT
-    leftSide = fst
+data RightSide = NTs (NT, NT) | Term T deriving (Show, Eq, Ord)
 
-    rightSide :: Rule -> RightSide
-    rightSide = snd
+type Rule = (NT, RightSide)
+type CFG = [Rule]
 
-    leftSides :: [Rule] -> [NT]
-    leftSides = map leftSide
+leftSide :: Rule -> NT
+leftSide = fst
 
-    rightSides :: [Rule] -> [RightSide]
-    rightSides = map rightSide
+rightSide :: Rule -> RightSide
+rightSide = snd
 
-    rulesFor :: RightSide -> Grammar -> [Rule]
-    -- ^ returns all the rules that can derive the given right side
-    rulesFor r = filter ((r==) . rightSide)
+rulesFor :: RightSide -> CFG -> [Rule]
+-- ^ returns all the rules that can derive the given right side
+rulesFor r = filter ((r==) . rightSide)
 
-    branchRulesFor :: (NT, NT) -> Grammar -> [Rule]
-    branchRulesFor = rulesFor . Branch
+ntGens :: CFG -> (NT, NT) -> [NT]
+ntGens g r = map leftSide $ rulesFor (NTs r) g
 
-    chainRulesFor :: T -> Grammar -> [Rule]
-    chainRulesFor = rulesFor . Chain
+termGens :: CFG -> T -> [NT]
+termGens g r = map leftSide $ rulesFor (Term r) g
 
-    parseRule :: String -> Rule
-    -- ^ Takes a string of the form "S -> A B" or "S -> a" and returns a corresponding rule
-    parseRule ws = f $ words ws
-        where   f [s, _, t] = (s, Chain t)
-                f [s, _, a, b] = (s, Branch (a, b))
-    
-    parseGrammar :: [String] -> Grammar
-    -- ^ Takes a list of rule-formatted strings and returns a grammar
-    parseGrammar = map parseRule
+parseRule :: String -> Rule
+-- ^ Takes a string of the form "S -> A B" or "S -> a" and returns a corresponding rule
+parseRule ws = f $ words ws 
+    where f [nt, "->", t] = (nt, Term t)
+          f [nt, "->", nt1, nt2] = (nt, NTs (nt1, nt2))
 
-    grammarFromFile :: String -> IO Grammar
-    -- ^ Takes a filename and returns a Grammar, read in from that file.
-    grammarFromFile fs = do f <- readFile fs; return $ parseGrammar $ lines f
+parseCFG :: [String] -> CFG
+-- ^ Takes a list of rule-formatted strings and returns a grammar
+parseCFG = map parseRule
+
+grammarFromFile :: String -> IO CFG
+-- ^ Takes a filename and returns a CFG, read in from that file.
+grammarFromFile fs = do f <- readFile fs; return $ parseCFG $ lines f
