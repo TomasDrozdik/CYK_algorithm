@@ -4,31 +4,24 @@ import Data.List  -- for nub
 
 type CYKMatrix a = Array (Int, Int) a
 
-cyk' :: CFG -> String -> Array (Int, Int) [NT]
+cyk' :: CFG -> String -> CYKMatrix [NT]
 -- ^ creates cyk matrix based on cyk algorithm
 cyk' cfg s =
     let n = -1 + length s
         m = array ((0,0), (n, n)) $
-          [ ((x, x + i), generators (x, (x + i))) | i <- [0..n],
-                                                    x <- [0..n-i] ] ++  -- upper triangular + diagonal
+          [ ((x, x + i), generators x (x + i)) | i <- [0..n],
+                                                 x <- [0..n-i] ] ++  -- upper triangular + diagonal
           [ ((x, y), []) | x <- [0..n],                      
                            y <- [0..n],
-                           x > y]                                       -- lower triangular
+                           x > y]                                    -- lower triangular - empty
 
-            where generators :: (Int, Int) -> [NT]
+            where generators :: Int -> Int -> [NT]
                   -- ^ returns NTs which generate string from index x to y
-                  generators (x, y) =
-                    if x == y then termGens cfg [s!!x]                  -- diagonal only direct rules
-                    else nub $ concat $ [ntGens' a b | t <- [x..y - 1],
-                                                       a <- m ! (x, t),
-                                                       b <- m ! (t + 1, y)]
-                        
-                        where ntGens' :: [NT] -> [NT] -> [NT]
-                              -- ^ takes two lists of NTs and returns list of NT generating 
-                              -- ordered combinations of original lists
-                              ntGens' xs ys = concat $ concat $ map 
-                                  (\x -> map (\y -> ntGens cfg (x, y)) ys) xs
-
+                  generators x y =
+                    if x == y then termGens cfg [s!!x]               -- diagonal only direct rules
+                    else nub $ concat $ [ntGens cfg (a, b) | t <- [x..y - 1],
+                                                             a <- m ! (x, t),
+                                                             b <- m ! (t + 1, y)]
     in m
 
 
@@ -40,9 +33,10 @@ cyk cfg s =
 
 
 main = do
-    putStrLn "--- CYK algorithm ---"
-    putStrLn "Name of file with CFG in Chomsky Normal Form:"
+    putStrLn "           --- CYK algorithm ---" 
+    putStrLn "\nName of file with CFG in Chomsky Normal Form:"
     file <- getLine
     cfg <- grammarFromFile file
-    putStrLn "Insert the string to parse:"
-    print $ fmap (cyk cfg) getLine
+    putStrLn "\nInsert the string to parse:"
+    s <- getLine
+    print $ cyk cfg s
