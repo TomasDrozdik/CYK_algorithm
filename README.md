@@ -8,6 +8,7 @@ Compilation:
     or use ghci
 
 API:
+    
     From CFG.hs: 
         - function grammarFromFile takes file with CFG in CHNF
           (see example file grammar.txt) as an input with S as
